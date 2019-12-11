@@ -1,4 +1,4 @@
-import RpcClient, {IConfig} from "locktripdd-rpc"
+import RpcClient, {IConfig} from "locktripd-rpc"
 
 import {Network, NetworkNames} from "./Network"
 
