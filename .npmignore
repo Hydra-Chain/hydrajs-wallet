@@ -1,0 +1,12 @@
+*.tgz
+TODO.md
+.vscode
+yarn*
+.env
+src
+node_modules
+.cache
+dist
+data
+scripts
+notes
