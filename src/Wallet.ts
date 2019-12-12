@@ -57,7 +57,7 @@ export class Wallet {
   public async getTransactions(
     pageNum?: number,
   ): Promise<Insight.IRawTransactions> {
-    return this.insight.getTransactions(this.address, pageNum)
+    return this.insight.getTransactions(this.address)
   }
 
   public async getTransactionInfo(
@@ -87,17 +87,6 @@ export class Wallet {
   }
 
   /**
-   * The network relay fee rate. (satoshi per byte)
-   */
-  public async feeRatePerByte(): Promise<number> {
-    const feeRate = await this.insight.estimateFeePerByte()
-    if (feeRate === -1) {
-      return defaultTxFeePerByte
-    }
-    return feeRate
-  }
-
-  /**
    * Generate and sign a payment transaction.
    *
    * @param to The receiving address
@@ -113,7 +102,7 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = Math.ceil(opts.feeRate || (await this.feeRatePerByte()))
+    const feeRate = 40;
 
     return buildPubKeyHashTransaction(utxos, this.keyPair, to, amount, feeRate)
   }
@@ -132,7 +121,7 @@ export class Wallet {
   ): Promise<number> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = Math.ceil(opts.feeRate || (await this.feeRatePerByte()))
+    const feeRate = 40
 
     return estimatePubKeyHashTransactionMaxSend(utxos, to, feeRate)
   }
@@ -179,7 +168,7 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = Math.ceil(opts.feeRate || (await this.feeRatePerByte()))
+    const feeRate = 40
 
     // TODO: estimate the precise gasLimit
 
@@ -245,7 +234,7 @@ export class Wallet {
   ): Promise<number> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = Math.ceil(opts.feeRate || (await this.feeRatePerByte()))
+    const feeRate = 40
 
     // TODO: estimate the precise gasLimit
 
@@ -312,7 +301,7 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = Math.ceil(opts.feeRate || (await this.feeRatePerByte()))
+    const feeRate = 40
 
     // TODO: estimate the precise gasLimit
 
