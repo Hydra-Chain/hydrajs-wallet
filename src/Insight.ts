@@ -38,12 +38,12 @@ export class Insight {
   }
 
   public async listUTXOs(address: string): Promise<Insight.IUTXO[]> {
-    const res = await this.axios.get(`/addr/${address}/utxo`)
+    const res = await this.axios.get(`/address/${address}/utxo`)
     return res.data
   }
 
   public async getInfo(address: string): Promise<Insight.IGetInfo> {
-    const res = await this.axios.get(`/addr/${address}`)
+    const res = await this.axios.get(`/address/${address}`)
     return res.data
   }
 
@@ -69,39 +69,6 @@ export class Insight {
   }
 
   /**
-   * Estimate the fee per KB of txdata, in satoshi. Returns -1 if no estimate is
-   * available. It always return -1 for testnet.
-   *
-   * @param nblocks
-   */
-  public async estimateFee(nblocks: number = 6): Promise<any> {
-    const res = await this.axios.get(`/utils/estimatefee?nbBlocks=${nblocks}`)
-
-    const feeRate: number = res.data
-    if (typeof feeRate !== "number" || feeRate < 0) {
-      return -1
-    }
-
-    return Math.ceil(feeRate * 1e8)
-  }
-
-  /**
-   * Estimate the fee per byte of txdata, in satoshi. Returns -1 if no estimate is
-   * available. It always return -1 for testnet.
-   *
-   * @param nblocks
-   */
-  public async estimateFeePerByte(nblocks: number = 6): Promise<any> {
-    const feeRate = await this.estimateFee()
-
-    if (feeRate < 0) {
-      return feeRate
-    }
-
-    return Math.ceil(feeRate / 1024)
-  }
-
-  /**
    * Get single transaction's info
    * @param id
    */
@@ -118,12 +85,9 @@ export class Insight {
    * @param pageNum
    */
   public async getTransactions(
-    address: string,
-    pageNum: number = 0,
+    address: string
   ): Promise<Insight.IRawTransactions> {
-    const result = await this.axios.get(`/txs/`, {
-      params: { address, pageNum },
-    })
+    const result = await this.axios.get(`/${address}/txs/`)
     return result.data as Insight.IRawTransactions
   }
 }
