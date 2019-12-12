@@ -4,8 +4,8 @@ import { INetworkInfo } from "./Network"
 import { NetworkNames } from "./constants"
 
 const INSIGHT_BASEURLS: { [key: string]: string } = {
-  [NetworkNames.MAINNET]: "https://explorer.locktrip.com/insight-api",
-  [NetworkNames.TESTNET]: "https://explorer.locktrip.com/insight-api",
+  [NetworkNames.MAINNET]: "https://explorer.locktrip.com/api",
+  [NetworkNames.TESTNET]: "https://explorer.locktrip.com/api",
   [NetworkNames.REGTEST]: "http://localhost:3001/insight-api",
 }
 
