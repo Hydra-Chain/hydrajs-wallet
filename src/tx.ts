@@ -63,10 +63,10 @@ export interface IContractCreateTXOptions {
 export interface IUTXO {
   // This structure is slightly different from that returned by Insight API
   address: string
-  txid: string
+  transactionId: string
   hash: string // txid
 
-  pos: number // vout (insight)
+  outputIndex: number // vout (insight)
 
   /**
    * Public key that controls this UXTO, as hex string.
@@ -148,7 +148,7 @@ export function buildPubKeyHashTransaction(
 
   let vinSum = new BigNumber(0)
   for (const input of inputs) {
-    txb.addInput(input.hash, input.pos)
+    txb.addInput(input.hash, input.outputIndex)
     vinSum = vinSum.plus(input.value)
   }
 
@@ -218,7 +218,7 @@ export function buildCreateContractTransaction(
 
   let totalValue = new BigNumber(0)
   for (const input of inputs) {
-    txb.addInput(input.hash, input.pos)
+    txb.addInput(input.hash, input.outputIndex)
     totalValue = totalValue.plus(input.value)
   }
 
@@ -363,7 +363,7 @@ export function buildSendToContractTransaction(
   // add inputs to txb
   let vinSum = new BigNumber(0)
   for (const input of inputs) {
-    txb.addInput(input.hash, input.pos)
+    txb.addInput(input.hash, input.outputIndex)
     vinSum = vinSum.plus(input.value)
   }
 

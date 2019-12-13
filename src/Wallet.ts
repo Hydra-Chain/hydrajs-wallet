@@ -102,7 +102,7 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = 40;
+    const feeRate = opts.feeRate || 95000;
 
     return buildPubKeyHashTransaction(utxos, this.keyPair, to, amount, feeRate)
   }
@@ -121,7 +121,7 @@ export class Wallet {
   ): Promise<number> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = 40
+    const feeRate = opts.feeRate || 95000;
 
     return estimatePubKeyHashTransactionMaxSend(utxos, to, feeRate)
   }
@@ -168,7 +168,7 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = 40
+    const feeRate = opts.feeRate || 95000;
 
     // TODO: estimate the precise gasLimit
 
@@ -234,7 +234,7 @@ export class Wallet {
   ): Promise<number> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = 40
+    const feeRate = opts.feeRate || 95000;
 
     // TODO: estimate the precise gasLimit
 
@@ -253,17 +253,17 @@ export class Wallet {
    * underlying locjs-lib.
    */
   public async getBitcoinjsUTXOs(): Promise<IUTXO[]> {
-    const uxtos = await this.getUTXOs()
+    const utxos = await this.getUTXOs()
     // FIXME: Generating another raw tx before the previous tx had be mined
     // could cause overlapping UXTOs to be used.
 
     // FIXME: make the two compatible...
     // massage UXTO to format accepted by bitcoinjs
-    const bitcoinjsUTXOs: IUTXO[] = uxtos.map((uxto) => ({
-      ...uxto,
-      pos: uxto.vout,
-      value: uxto.satoshis,
-      hash: uxto.txid,
+    const bitcoinjsUTXOs: IUTXO[] = utxos.map((utxo) => ({
+      ...utxo,
+      pos: utxo.outputIndex,
+      value: Number(utxo.value),
+      hash: utxo.transactionId,
     }))
 
     return bitcoinjsUTXOs
@@ -301,7 +301,7 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = 40
+    const feeRate = opts.feeRate || 95000;
 
     // TODO: estimate the precise gasLimit
 

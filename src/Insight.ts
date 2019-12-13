@@ -87,7 +87,7 @@ export class Insight {
   public async getTransactions(
     address: string
   ): Promise<Insight.IRawTransactions> {
-    const result = await this.axios.get(`/${address}/txs/`)
+    const result = await this.axios.get(`/address/${address}/txs/`)
     return result.data as Insight.IRawTransactions
   }
 }
@@ -101,8 +101,8 @@ export namespace Insight {
 
   export interface IUTXO {
     address: string
-    txid: string
-    vout: number
+    transactionId: string
+    outputIndex: number
 
     /**
      * Public key that controls this UXTO, as hex string.
@@ -110,7 +110,7 @@ export namespace Insight {
     scriptPubKey: string
 
     amount: number
-    satoshis: number
+    value: number
 
     isStake: boolean
     height: number
