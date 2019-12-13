@@ -191,7 +191,6 @@ export function buildCreateContractTransaction(
   const createContractScript = BTCScript.compile([
     OPS.OP_4,
     encodeCScriptInt(gasLimit),
-    encodeCScriptInt(gasPrice),
     Buffer.from(code, "hex"),
     OPS.OP_CREATE,
   ])
@@ -279,7 +278,6 @@ export function estimateSendToContractTransactionMaxValue(
   const opcallScript = BTCScript.compile([
     OPS.OP_4,
     encodeCScriptInt(gasLimit),
-    encodeCScriptInt(gasPrice),
     Buffer.from(encodedData, "hex"),
     Buffer.from(contractAddress, "hex"),
     OPS.OP_CALL,
@@ -339,7 +337,6 @@ export function buildSendToContractTransaction(
   const opcallScript = BTCScript.compile([
     OPS.OP_4,
     encodeCScriptInt(gasLimit),
-    encodeCScriptInt(gasPrice),
     Buffer.from(encodedData, "hex"),
     Buffer.from(contractAddress, "hex"),
     OPS.OP_CALL,

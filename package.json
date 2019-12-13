@@ -1,6 +1,6 @@
 {
   "name": "locjs-wallet",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A toolkit for building locktrip light wallets",
   "main": "lib/index.js",
   "keywords": [],
