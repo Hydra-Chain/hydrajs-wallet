@@ -179,12 +179,14 @@ export namespace Insight {
 
   export interface IVin {
     txid: string
-    addr: string // 执行转出的钱包地址
+    address: string
+    value: string
   }
 
   export interface IVout {
     value: string
     scriptPubKey: IScriptPubKey
+    address: string
   }
 
   export interface IScriptPubKey {
