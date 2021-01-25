@@ -20,18 +20,6 @@ yarn add hydrajs-wallet
   - [fromWIF](#fromwif)
   - [fromMnemonic](#frommnemonic)
   - [fromEncryptedPrivateKey](#fromencryptedprivatekey)
-- [Wallet](#wallet)
-  - [async wallet.getInfo](#async-walletgetinfo)
-  - [async wallet.send](#async-walletsend)
-  - [async wallet.sendEstimateMaxValue](#async-walletsendestimatemaxvalue)
-  - [async wallet.generateTx](#async-walletgeneratetx)
-  - [async wallet.contractSend](#async-walletcontractsend)
-  - [async wallet.contractSendEstimateMaxValue](#async-walletcontractsendestimatemaxvalue)
-  - [async wallet.generateContractSendTx](#async-walletgeneratecontractsendtx)
-  - [async wallet.contractCall](#async-walletcontractcall)
-  - [async getTransactions](#async-gettransactions)
-  - [toEncryptedPrivateKey](#toencryptedprivatekey)
-  - [deriveChildWallet](#derivechildwallet)
 
 # Examples
 
