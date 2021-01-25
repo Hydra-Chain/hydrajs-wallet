@@ -1,14 +1,14 @@
 {
-  "name": "locjs-wallet",
-  "version": "0.0.5",
-  "description": "A toolkit for building locktrip light wallets",
+  "name": "hydrajs-wallet",
+  "version": "0.0.1",
+  "description": "A toolkit for building HYDRA light wallets",
   "main": "lib/index.js",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LockTrip/Blockchain.git"
+    "url": "https://github.com/Hydra-Chain/hydrajs-wallet"
   },
   "devDependencies": {
     "@types/bitcoinjs-lib": "^3.3.1",
@@ -33,8 +33,8 @@
     "buffer": "^5.1.0",
     "coinselect": "^3.1.11",
     "hash.js": "^1.1.5",
-    "locktripd-rpc": "^0.0.2",
-    "locjs-lib": "^0.0.2",
+    "hydrad-rpc": "^0.0.1",
+    "hydrajs-lib": "^0.0.5",
     "safe-buffer": "^5.1.1",
     "scryptsy": "^2.0.0",
     "secp256k1": "^3.5.0",

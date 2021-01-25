@@ -16,7 +16,6 @@ async function main() {
     "00aabbcc",
     {
       gasLimit: 250000,
-      gasPrice: 40,
     },
   )
 

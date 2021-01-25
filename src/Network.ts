@@ -30,31 +30,22 @@ export interface INetworkInfo {
 export const networksInfo: { [key: string]: INetworkInfo } = {
   [NetworkNames.MAINNET]: {
     name: NetworkNames.MAINNET,
-    messagePrefix: "\u0015LockTrip Signed Message:\n",
-    bech32: "qc",
+    messagePrefix: "\u0015HYDRA Signed Message:\n",
+    bech32: "hc",
     bip32: { public: 76067358, private: 76066276 },
-    pubKeyHash: 48,
+    pubKeyHash: 40,
     scriptHash: 63,
     wif: 128,
   },
   [NetworkNames.TESTNET]: {
     name: NetworkNames.TESTNET,
-    messagePrefix: "\u0015LockTrip Signed Message:\n",
-    bech32: "tq",
+    messagePrefix: "\u0015HYDRA Signed Message:\n",
+    bech32: "th",
     bip32: { public: 70617039, private: 70615956 },
     pubKeyHash: 66,
     scriptHash: 128,
     wif: 239,
-  },
-  [NetworkNames.REGTEST]: {
-    name: NetworkNames.REGTEST,
-    messagePrefix: "\u0015LockTrip Signed Message:\n",
-    bech32: "qcrt",
-    bip32: { public: 70617039, private: 70615956 },
-    pubKeyHash: 120,
-    scriptHash: 110,
-    wif: 239,
-  },
+  }
 }
 
 export class Network {
@@ -103,7 +94,7 @@ export class Network {
   }
 
   /**
-   * Restore 10 wallet addresses exported from LockTrip's mobile clients. These
+   * Restore 10 wallet addresses exported from HYDRA's mobile clients. These
    * wallets are 10 sequential addresses rooted at the HD-wallet path
    * `m/88'/0'/0'` `m/88'/0'/1'` `m/88'/0'/2'`, and so on.
    *
@@ -155,10 +146,8 @@ export class Network {
 
 const mainnet = new Network(networksInfo[NetworkNames.MAINNET])
 const testnet = new Network(networksInfo[NetworkNames.TESTNET])
-const regtest = new Network(networksInfo[NetworkNames.REGTEST])
 
 export const networks = {
   mainnet,
-  testnet,
-  regtest,
+  testnet
 }

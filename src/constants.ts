@@ -1,5 +1,4 @@
 export enum NetworkNames {
-  MAINNET = "locktrip",
-  TESTNET = "locktrip_testnet",
-  REGTEST = "locktrip_regtest",
+  MAINNET = "hydra",
+  TESTNET = "hydra_testnet",
 }

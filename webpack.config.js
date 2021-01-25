@@ -15,9 +15,9 @@ module.exports = {
     extensions: ['.ts', '.js']
   },
   output: {
-    filename: 'loc-wallet.js',
+    filename: 'hydrajs-wallet.js',
     path: path.resolve(__dirname, 'dist'),
-    library: "LockTripWallet",
+    library: "HydraJSWallet",
     libraryTarget: "umd",
   }
 }

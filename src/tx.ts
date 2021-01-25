@@ -33,11 +33,6 @@ export interface IContractSendTXOptions {
   gasLimit?: number
 
   /**
-   * unit: satoshi / gas
-   */
-  gasPrice?: number
-
-  /**
    * unit: satoshi / kilobyte
    */
   feeRate?: number
@@ -48,11 +43,6 @@ export interface IContractCreateTXOptions {
    * unit: satoshi
    */
   gasLimit?: number
-
-  /**
-   * unit: satoshi / gas
-   */
-  gasPrice?: number
 
   /**
    * unit: satoshi / kilobyte
@@ -107,7 +97,7 @@ export function estimatePubKeyHashTransactionMaxSend(
       return maxAmount
     }
 
-    // step down by 0.001 loc
+    // step down by 0.001 hydra
     maxAmount = maxAmount - 100000
   }
 
@@ -185,7 +175,7 @@ export function buildCreateContractTransaction(
   opts: IContractCreateTXOptions = {},
 ): string {
   const gasLimit = opts.gasLimit || defaultContractSendTxOptions.gasLimit
-  const gasPrice = opts.gasPrice || defaultContractSendTxOptions.gasPrice
+  const gasPrice = 1250
   const gasLimitFee = new BigNumber(gasLimit).times(gasPrice).toNumber()
 
   const createContractScript = BTCScript.compile([
@@ -242,7 +232,6 @@ export function buildCreateContractTransaction(
 
 const defaultContractSendTxOptions = {
   gasLimit: 250000,
-  gasPrice: 40, // 40 satoshi / gas
   amount: 0,
 
   // Wallet uses only one address. Can't really support senderAddress.
@@ -260,7 +249,7 @@ export function estimateSendToContractTransactionMaxValue(
   feeRate = Math.floor(feeRate)
 
   const gasLimit = opts.gasLimit || defaultContractSendTxOptions.gasLimit
-  const gasPrice = opts.gasPrice || defaultContractSendTxOptions.gasPrice
+  const gasPrice = 1250
 
   let amount = 0
   for (const utxo of utxos) {
@@ -324,7 +313,7 @@ export function buildSendToContractTransaction(
   feeRate = Math.floor(feeRate)
 
   const gasLimit = opts.gasLimit || defaultContractSendTxOptions.gasLimit
-  const gasPrice = opts.gasPrice || defaultContractSendTxOptions.gasPrice
+  const gasPrice = 1250
   const amount = opts.amount || defaultContractSendTxOptions.amount
 
   ensureAmountInteger(amount)
@@ -385,7 +374,7 @@ export function buildSendToContractTransaction(
 }
 
 // The prevalent network fee is 0.004 per KB. If set to 100 times of norm, assume error.
-const MAX_FEE_RATE = Math.ceil((0.004 * 100 * 1e8) / 1024)
+const MAX_FEE_RATE = Math.ceil((2.222222 * 100 * 1e8) / 1024)
 
 function checkFeeRate(feeRate: number) {
   if (feeRate > MAX_FEE_RATE) {

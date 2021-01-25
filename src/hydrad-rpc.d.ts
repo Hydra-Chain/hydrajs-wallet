@@ -1,4 +1,4 @@
-declare module "locktripd-rpc" {
+declare module "hydrad-rpc" {
     export interface IConfig {
         protocol?: string
         user?: string

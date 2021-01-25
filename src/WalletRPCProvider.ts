@@ -16,19 +16,15 @@ export class WalletRPCProvider implements IProvider {
       encodedData,
       // these are optionals
       amount,
-      gasLimit,
-      gasPrice,
+      gasLimit
     ] = params
 
-    // The underlying locjs-wallet API expects gasPrice and amount to be specified in sat
-    const gasPriceInSatoshi = Math.floor((gasPrice || 0.0000004) * 1e8)
     const amountInSatoshi = Math.floor((amount || 0) * 1e8)
 
     opts = {
       ...opts,
       amount: amountInSatoshi,
-      gasLimit: gasLimit || 200000,
-      gasPrice: gasPriceInSatoshi,
+      gasLimit: gasLimit || 200000
     }
 
     switch (method.toLowerCase()) {

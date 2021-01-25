@@ -20,11 +20,11 @@ import {
 import { params, IScryptParams } from "./scrypt"
 
 /**
- * The default relay fee rate (per byte) if network doesn't cannot estimate how much to use.
+ * The default relay fee rate (per byte) if network cannot estimate how much to use.
  *
  * This value will be used for testnet.
  */
-const defaultTxFeePerByte = Math.ceil((0.004 * 1e8) / 1024)
+const defaultTxFeePerByte = Math.ceil((2.222222 * 1e8) / 1024)
 
 export class Wallet {
   public address: string
@@ -102,7 +102,7 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = opts.feeRate || 95000;
+    const feeRate = opts.feeRate || 222222;
 
     return buildPubKeyHashTransaction(utxos, this.keyPair, to, amount, feeRate)
   }
@@ -121,7 +121,7 @@ export class Wallet {
   ): Promise<number> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = opts.feeRate || 95000;
+    const feeRate = opts.feeRate || 222222;
 
     return estimatePubKeyHashTransactionMaxSend(utxos, to, feeRate)
   }
@@ -168,7 +168,7 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = opts.feeRate || 95000;
+    const feeRate = opts.feeRate || 222222;
 
     // TODO: estimate the precise gasLimit
 
@@ -234,7 +234,7 @@ export class Wallet {
   ): Promise<number> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = opts.feeRate || 95000;
+    const feeRate = opts.feeRate || 222222;
 
     // TODO: estimate the precise gasLimit
 
@@ -250,7 +250,7 @@ export class Wallet {
 
   /**
    * Massage UTXOs returned by the Insight API to UTXO format accepted by the
-   * underlying locjs-lib.
+   * underlying hydrajs-lib.
    */
   public async getBitcoinjsUTXOs(): Promise<IUTXO[]> {
     const utxos = await this.getUTXOs()
@@ -301,7 +301,7 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = opts.feeRate || 95000;
+    const feeRate = opts.feeRate || 222222;
 
     // TODO: estimate the precise gasLimit
 
@@ -315,6 +315,6 @@ export class Wallet {
   }
 
   // TODO
-  // lrc20 lookup
+  // hrc20 lookup
   // estimateCall
 }

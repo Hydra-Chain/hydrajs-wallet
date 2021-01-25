@@ -1,8 +1,8 @@
-import RpcClient, {IConfig} from "locktripd-rpc"
+import RpcClient, {IConfig} from "hydrad-rpc"
 
 import {Network, NetworkNames} from "./Network"
 
-export default class QtumRPC {
+export default class HydraRPC {
   public rpc: RpcClient
 
   constructor(config?: IConfig) {
@@ -21,16 +21,13 @@ export default class QtumRPC {
   }
 }
 
-export const rpcClient = new QtumRPC({
+export const rpcClient = new HydraRPC({
   user: "username",
   pass: "password",
-  port: "13389",
+  port: "3389",
   protocol: "http",
 })
 
 export async function generateBlock(network: Network) {
-  // generate a block after creating contract
-  if (network.info.name === NetworkNames.REGTEST) {
-    await rpcClient.generate(1)
-  }
+  
 }
