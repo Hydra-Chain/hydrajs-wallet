@@ -61,7 +61,7 @@ export class Insight {
     // FIXME wow, what a weird API design... maybe we should just host the RPC
     // server, with limited API exposed.
     const res = await this.axios.get(
-      `/contracts/${address}/hash/${encodedData}/call`,
+      `/contract/${address}/call?data=${encodedData}`,
     )
 
     return res.data
