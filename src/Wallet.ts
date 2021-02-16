@@ -1,7 +1,7 @@
 import * as bip38 from "bip38"
 import * as wif from "wif"
 
-import { ECPair, HDNode } from "bitcoinjs-lib"
+import { ECPair, HDNode, In } from "bitcoinjs-lib"
 
 import { INetworkInfo } from "./Network"
 import { Insight } from "./Insight"
@@ -48,6 +48,17 @@ export class Wallet {
 
   public async getUTXOs(): Promise<Insight.IUTXO[]> {
     return this.insight.listUTXOs(this.address)
+  }
+
+  /**
+   * Get information about the balance history of an address
+   */
+  public async getBalanceHistory(): Promise<Insight.IBalanceHistory[]> {
+    return this.insight.getAddressBalanceHistory(this.address)
+  }
+
+  public async getTokenBalanceHistory(token: string): Promise<Insight.ITokenBalanceHistory[]> {
+    return this.insight.getAddressTokenBalanceHistory(this.address, token)
   }
 
   /**

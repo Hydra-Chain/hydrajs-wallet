@@ -36,6 +36,16 @@ export class Insight {
     })
   }
 
+  public async getAddressBalanceHistory(address: string): Promise<Insight.IBalanceHistory[]> {
+    const res = await this.axios.get(`/address/${address}/balance-history`)
+    return res.data.transactions as Insight.IBalanceHistory[]
+  }
+
+  public async getAddressTokenBalanceHistory(address: string, token: string): Promise<Insight.ITokenBalanceHistory[]> {
+    const res = await this.axios.get(`/address/${address}/hrc20-balance-history/${token}`)
+    return res.data.transactions as Insight.ITokenBalanceHistory[]
+  }
+
   public async listUTXOs(address: string): Promise<Insight.IUTXO[]> {
     const res = await this.axios.get(`/address/${address}/utxo`)
     return res.data
@@ -96,6 +106,33 @@ export namespace Insight {
 
   export interface ISendRawTxResult {
     txid: string
+  }
+
+  export interface IBalanceHistory {
+    transactionId: string
+    blockHash: string
+    blockHeight: number
+    timestamp: number
+    amount: string
+    balance: string
+  }
+
+  export interface ITokenBalanceHistory {
+    transactionId: string
+    blockhash: string
+    blockHeight: number
+    timestamp: number
+    tokens: ITokenBalance[]
+  }
+
+  export interface ITokenBalance {
+    address: string
+    addressHex: string
+    name: string
+    symbol: string
+    decimals: number
+    amount: string
+    balance: string
   }
 
   export interface IUTXO {
