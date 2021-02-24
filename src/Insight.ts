@@ -42,7 +42,7 @@ export class Insight {
   }
 
   public async getAddressTokenBalanceHistory(address: string, token: string): Promise<Insight.ITokenBalanceHistory[]> {
-    const res = await this.axios.get(`/address/${address}/hrc20-balance-history/${token}`)
+    const res = await this.axios.get(`/address/${address}/qrc20-balance-history/${token}`)
     return res.data.transactions as Insight.ITokenBalanceHistory[]
   }
 
@@ -53,7 +53,9 @@ export class Insight {
 
   public async getInfo(address: string): Promise<Insight.IGetInfo> {
     const res = await this.axios.get(`/address/${address}`)
-    return res.data
+    let retVal = res.data;
+    retVal.addrStr = address;
+    return retVal;
   }
 
   public async sendRawTx(rawtx: string): Promise<Insight.ISendRawTxResult> {
