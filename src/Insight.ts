@@ -98,7 +98,7 @@ export class Insight {
   public async getTransactions(
     address: string
   ): Promise<Insight.IRawTransactions> {
-    const result = await this.axios.get(`/address/${address}/txs/`)
+    const result = await this.axios.get(`/address/${address}/basic-txs/`)
     return result.data as Insight.IRawTransactions
   }
 }
