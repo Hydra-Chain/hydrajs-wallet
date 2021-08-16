@@ -112,8 +112,8 @@ export class Wallet {
     opts: ISendTxOptions = {},
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
-
-    const feeRate = opts.feeRate || 222222;
+    const infoRes = await this.insight.getBlockchainInfo()
+    const feeRate = Math.ceil(infoRes.feeRate * 1e5);
 
     return buildPubKeyHashTransaction(utxos, this.keyPair, to, amount, feeRate)
   }
@@ -132,7 +132,8 @@ export class Wallet {
   ): Promise<number> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = opts.feeRate || 222222;
+    const infoRes = await this.insight.getBlockchainInfo()
+    const feeRate = Math.ceil(infoRes.feeRate * 1e5);
 
     return estimatePubKeyHashTransactionMaxSend(utxos, to, feeRate)
   }
@@ -179,17 +180,19 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = opts.feeRate || 222222;
+    const infoRes = await this.insight.getBlockchainInfo()
+    const feeRate = Math.ceil(infoRes.feeRate * 1e5);
 
     // TODO: estimate the precise gasLimit
 
-    return buildSendToContractTransaction(
+    return await buildSendToContractTransaction(
       utxos,
       this.keyPair,
       contractAddress,
       encodedData,
       feeRate,
       opts,
+      this.network
     )
   }
 
@@ -245,17 +248,19 @@ export class Wallet {
   ): Promise<number> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = opts.feeRate || 222222;
+    const infoRes = await this.insight.getBlockchainInfo()
+    const feeRate = Math.ceil(infoRes.feeRate * 1e5);
 
     // TODO: estimate the precise gasLimit
 
-    return estimateSendToContractTransactionMaxValue(
+    return await estimateSendToContractTransactionMaxValue(
       utxos,
       this.keyPair,
       contractAddress,
       encodedData,
       feeRate,
       opts,
+      this.network
     )
   }
 
@@ -264,7 +269,7 @@ export class Wallet {
    * underlying hydrajs-lib.
    */
   public async getBitcoinjsUTXOs(): Promise<IUTXO[]> {
-    const utxos = (await this.getUTXOs()).filter(e => e.confirmations >= 500)
+    const utxos = (await this.getUTXOs()).filter(e => e.confirmations >= 500 || e.isStake == false)
     // FIXME: Generating another raw tx before the previous tx had be mined
     // could cause overlapping UXTOs to be used.
 
@@ -312,16 +317,18 @@ export class Wallet {
   ): Promise<string> {
     const utxos = await this.getBitcoinjsUTXOs()
 
-    const feeRate = opts.feeRate || 222222;
+    const infoRes = await this.insight.getBlockchainInfo()
+    const feeRate = Math.ceil(infoRes.feeRate * 1e5);
 
     // TODO: estimate the precise gasLimit
 
-    return buildCreateContractTransaction(
+    return await buildCreateContractTransaction(
       utxos,
       this.keyPair,
       code,
       feeRate,
       opts,
+      this.network
     )
   }
 

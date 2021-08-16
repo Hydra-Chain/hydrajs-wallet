@@ -8,7 +8,10 @@ import { Buffer } from "buffer"
 
 import { OPS } from "./opcodes"
 
+import { Insight } from "./Insight"
+
 import coinSelect = require("coinselect")
+import { INetworkInfo } from "."
 
 /**
  * Options for a payment transaction
@@ -167,15 +170,17 @@ export function buildPubKeyHashTransaction(
  * @param utxoList
  * @returns the built tx
  */
-export function buildCreateContractTransaction(
+export async function buildCreateContractTransaction(
   utxos: IUTXO[],
   keyPair: ECPair,
   code: string,
   feeRate: number,
   opts: IContractCreateTXOptions = {},
-): string {
+  network: INetworkInfo
+): Promise<string> {
   const gasLimit = opts.gasLimit || defaultContractSendTxOptions.gasLimit
-  const gasPrice = 1250
+  const infoRes = await Insight.forNetwork(network).getBlockchainInfo()
+  const gasPrice = Math.round(parseFloat(infoRes.gasPrice) * 1e8)
   const gasLimitFee = new BigNumber(gasLimit).times(gasPrice).toNumber()
 
   const createContractScript = BTCScript.compile([
@@ -238,18 +243,20 @@ const defaultContractSendTxOptions = {
   // senderAddress
 }
 
-export function estimateSendToContractTransactionMaxValue(
+export async function estimateSendToContractTransactionMaxValue(
   utxos: IUTXO[],
   keyPair: ECPair,
   contractAddress: string,
   encodedData: string,
   feeRate: number,
   opts: IContractSendTXOptions = {},
-): number {
+  network: INetworkInfo
+): Promise<number> {
   feeRate = Math.floor(feeRate)
 
   const gasLimit = opts.gasLimit || defaultContractSendTxOptions.gasLimit
-  const gasPrice = 1250
+  const infoRes = await Insight.forNetwork(network).getBlockchainInfo()
+  const gasPrice = Math.round(parseFloat(infoRes.gasPrice) * 1e8)
 
   let amount = 0
   for (const utxo of utxos) {
@@ -301,19 +308,21 @@ export function estimateSendToContractTransactionMaxValue(
  * @param utxoList
  * @returns the built tx
  */
-export function buildSendToContractTransaction(
+export async function buildSendToContractTransaction(
   utxos: IUTXO[],
   keyPair: ECPair,
   contractAddress: string,
   encodedData: string,
   feeRate: number,
   opts: IContractSendTXOptions = {},
-): string {
+  network: INetworkInfo
+): Promise<string> {
   // feeRate must be an integer number, or coinselect would always fail
   feeRate = Math.floor(feeRate)
 
   const gasLimit = opts.gasLimit || defaultContractSendTxOptions.gasLimit
-  const gasPrice = 1250
+  const infoRes = await Insight.forNetwork(network).getBlockchainInfo()
+  const gasPrice = Math.round(parseFloat(infoRes.gasPrice) * 1e8)
   const amount = opts.amount || defaultContractSendTxOptions.amount
 
   ensureAmountInteger(amount)

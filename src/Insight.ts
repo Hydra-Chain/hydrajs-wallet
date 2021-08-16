@@ -36,6 +36,11 @@ export class Insight {
     })
   }
 
+  public async getBlockchainInfo(): Promise<Insight.IBlockchainInfo> {
+    const res = await this.axios.get('/info')
+    return res.data as Insight.IBlockchainInfo
+  }
+
   public async getAddressBalanceHistory(address: string): Promise<Insight.IBalanceHistory[]> {
     const res = await this.axios.get(`/address/${address}/balance-history`)
     return res.data.transactions as Insight.IBalanceHistory[]
@@ -108,6 +113,15 @@ export namespace Insight {
 
   export interface ISendRawTxResult {
     txid: string
+  }
+
+  export interface IBlockchainInfo {
+    height: number
+    supply: number
+    netStakeWeight: number
+    feeRate: number
+    gasPrice: string
+    circulatingSupply: number
   }
 
   export interface IBalanceHistory {
