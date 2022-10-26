@@ -270,7 +270,7 @@ export class Wallet {
    */
   public async getBitcoinjsUTXOs(): Promise<IUTXO[]> {
     await new Promise(resolve => setTimeout(resolve, 5000));
-    const utxos = (await this.getUTXOs()).filter(e => e.confirmations >= 500 || e.isStake == false)
+    const utxos = (await this.getUTXOs()).filter(e => e.confirmations >= 2000 || e.isStake == false)
     // FIXME: Generating another raw tx before the previous tx had be mined
     // could cause overlapping UXTOs to be used.
 
