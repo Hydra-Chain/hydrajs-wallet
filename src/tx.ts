@@ -39,6 +39,8 @@ export interface IContractSendTXOptions {
    * unit: satoshi / kilobyte
    */
   feeRate?: number
+  
+  sender?: string
 }
 
 export interface IContractCreateTXOptions {
