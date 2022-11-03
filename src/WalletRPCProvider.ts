@@ -18,13 +18,15 @@ export class WalletRPCProvider implements IProvider {
       amount,
       gasLimit
     ] = params
+    const senderAddress = method.toLowerCase() === 'sendtocontract' ? params[5] : params[2]
 
     const amountInSatoshi = Math.floor((amount || 0) * 1e8)
 
     opts = {
       ...opts,
       amount: amountInSatoshi,
-      gasLimit: gasLimit || 200000
+      gasLimit: gasLimit || 200000,
+      sender: senderAddress || ''
     }
 
     switch (method.toLowerCase()) {

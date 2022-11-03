@@ -209,7 +209,7 @@ export class Wallet {
     encodedData: string,
     opts: IContractSendTXOptions = {},
   ): Promise<Insight.IContractCall> {
-    return this.insight.contractCall(contractAddress, encodedData)
+    return this.insight.contractCall(contractAddress, encodedData, opts)
   }
 
   /**

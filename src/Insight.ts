@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from "axios"
 
 import { INetworkInfo } from "./Network"
 import { NetworkNames } from "./constants"
+import { IContractSendTXOptions } from "./tx"
 
 const INSIGHT_BASEURLS: { [key: string]: string } = {
   [NetworkNames.MAINNET]: "https://explorer.hydrachain.org/api",
@@ -74,12 +75,15 @@ export class Insight {
   public async contractCall(
     address: string,
     encodedData: string,
+    opts: IContractSendTXOptions = {}
   ): Promise<Insight.IContractCall> {
     // FIXME wow, what a weird API design... maybe we should just host the RPC
     // server, with limited API exposed.
-    const res = await this.axios.get(
-      `/contract/${address}/call?data=${encodedData}`,
-    )
+    let route  = `/contract/${address}/call?data=${encodedData}`
+    if (opts.sender) {
+      route += `&sender=${opts.sender}`
+    }
+    const res = await this.axios.get(route)
 
     return res.data
   }
