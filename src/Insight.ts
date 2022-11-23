@@ -77,13 +77,10 @@ export class Insight {
     encodedData: string,
     opts: IContractSendTXOptions = {}
   ): Promise<Insight.IContractCall> {
-    // FIXME wow, what a weird API design... maybe we should just host the RPC
-    // server, with limited API exposed.
-    let route  = `/contract/${address}/call?data=${encodedData}`
-    if (opts.sender) {
-      route += `&sender=${opts.sender}`
-    }
-    const res = await this.axios.get(route)
+    const res = await this.axios.post(`/contract/${address}/call`, {
+      data: encodedData,
+      sender: opts.sender || undefined
+    })
 
     return res.data
   }
