@@ -1,6 +1,6 @@
 {
   "name": "hydrajs-wallet",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "A toolkit for building HYDRA light wallets",
   "main": "lib/index.js",
   "keywords": [],
@@ -30,6 +30,7 @@
     "bignumber.js": "4.1.0",
     "bip38": "^2.0.2",
     "bip39": "^2.5.0",
+    "bitcoinjs-message": "^2.2.0",
     "buffer": "^5.1.0",
     "coinselect": "^3.1.11",
     "hash.js": "^1.1.5",
