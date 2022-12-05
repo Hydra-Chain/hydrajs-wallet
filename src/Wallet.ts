@@ -2,6 +2,7 @@ import * as bip38 from "bip38"
 import * as wif from "wif"
 
 import { ECPair, HDNode, In } from "bitcoinjs-lib"
+import bitcoinMessage from "bitcoinjs-message"
 
 import { INetworkInfo } from "./Network"
 import { Insight } from "./Insight"
@@ -331,6 +332,22 @@ export class Wallet {
       opts,
       this.network
     )
+  }
+
+  public async signMessage(
+    msg: string
+  ): Promise<string> {
+    const privateKey = this.keyPair.d.toBuffer(32)
+    const signature = await bitcoinMessage.signAsync(msg, privateKey, this.keyPair.compressed, "\u0016HYDRA Signed Message:\n")
+    return signature.toString('base64')
+  }
+
+  public verifyMessage(
+    msg: string,
+    address: string,
+    signature: string
+  ): boolean {
+    return bitcoinMessage.verify(msg, address, signature, "\u0016HYDRA Signed Message:\n")
   }
 
   // TODO
