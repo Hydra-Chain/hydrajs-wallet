@@ -364,10 +364,6 @@ export class Wallet {
     );
   }
 
-  // TODO
-  // hrc20 lookup
-  // estimateCall
-
   public async optimizeUTXOS(
     utxos: IUTXO[],
     keyPair: ECPair,
@@ -540,3 +536,7 @@ export class Wallet {
       : txResponse.error;
   }
 }
+
+// TODO
+// hrc20 lookup
+// estimateCall
