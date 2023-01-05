@@ -373,7 +373,6 @@ export class Wallet {
     var UTXO_MIN_VALUE = 100;
     var validUTXOs = filterUtxos(utxos);
     var fee: BigNumber;
-    var outputs: any;
     const from: string = this.address;
 
     if (validUTXOs.length == 0) {
@@ -402,46 +401,8 @@ export class Wallet {
       };
     }
 
-    function selectUTXOs(
-      utxos: Array<IUTXO>,
-      value: number,
-      bytefee: number,
-      outputs = 101
-    ) {
-      var totalValue = new BigNumber(0);
-      var selected = [];
-      for (let utxo of utxos) {
-        totalValue = totalValue.plus(utxo.value);
-        selected.push(utxo);
-        var txsize = selected.length * 102 + outputs * 31 + 10;
-        if (totalValue.gt(txsize * bytefee + value)) {
-          break;
-        }
-      }
-      return selected;
-    }
-
-    let totalOutputs: any = balance.dividedToIntegerBy(
-      new BigNumber(UTXO_MIN_VALUE).times(1e8)
-    );
-
-    if (totalOutputs > 100) {
-      // If more than 100 => therefore the balance is over 10000 => 100 outputs with 100 and 1 with the change
-      outputs = 101;
-      validUTXOs = selectUTXOs(
-        validUTXOs,
-        feeRate,
-        new BigNumber(UTXO_MIN_VALUE).times(1e8).times(100).toNumber(),
-        outputs
-      );
-
-      balance = sumUTXOs(validUTXOs);
-    } else {
-      outputs = totalOutputs;
-    }
-    var value = new BigNumber(UTXO_MIN_VALUE).times(1e8).times(outputs);
     // Calculate fee with the current inputs and outputs
-    fee = calculateFee(validUTXOs, outputs, feeRate, keyPair);
+    fee = calculateFee(validUTXOs, 1, feeRate, keyPair);
 
     if (fee.gt(balance)) {
       return {
@@ -450,11 +411,7 @@ export class Wallet {
       };
     }
 
-    if (balance.minus(fee).lt(value)) {
-      outputs -= 1;
-      value = value.minus(new BigNumber(UTXO_MIN_VALUE).times(1e8));
-    }
-    if (value.lt(new BigNumber(UTXO_MIN_VALUE).times(1e8))) {
+    if (balance.lt(new BigNumber(UTXO_MIN_VALUE).times(1e8))) {
       return {
         hex: "",
         error: "No enough balance for minimum UTXO.",
@@ -465,16 +422,7 @@ export class Wallet {
       tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
     }
 
-    tx.addOutput(
-      from,
-      balance
-        .minus(fee)
-        .minus(new BigNumber(outputs - 1).times(UTXO_MIN_VALUE).times(1e8))
-        .toNumber()
-    );
-    for (var i = 0; i < outputs - 1; i++) {
-      tx.addOutput(from, new BigNumber(UTXO_MIN_VALUE).times(1e8).toNumber());
-    }
+    tx.addOutput(from, balance.minus(fee).toNumber());
 
     // Sign the inputs
     for (var i = 0; i < validUTXOs.length; i++) {
@@ -506,10 +454,11 @@ export class Wallet {
     function filterUtxos(utxos: Array<IUTXO>) {
       return utxos.filter((utxo: any) => {
         const value = new BigNumber(utxo.value);
-        if (value.gt(new BigNumber(4).times(1e6))) {
-          if (!value.eq(new BigNumber(UTXO_MIN_VALUE).times(1e8))) {
-            return true;
-          }
+        if (
+          value.gt(new BigNumber(25).times(1e6)) &&
+          value.lt(new BigNumber(UTXO_MIN_VALUE).times(1e8))
+        ) {
+          return true;
         }
         return false;
       });
