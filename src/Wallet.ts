@@ -401,6 +401,7 @@ export class Wallet {
       };
     }
 
+
     // Calculate fee with the current inputs and outputs
     fee = calculateFee(validUTXOs, 1, feeRate, keyPair);
 
@@ -410,6 +411,7 @@ export class Wallet {
         error: "Not enough balance to pay fee.",
       };
     }
+
 
     if (balance.lt(new BigNumber(UTXO_MIN_VALUE).times(1e8))) {
       return {
@@ -421,6 +423,7 @@ export class Wallet {
     for (var i = 0; i < validUTXOs.length; i++) {
       tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
     }
+
 
     tx.addOutput(from, balance.minus(fee).toNumber());
 
@@ -454,11 +457,13 @@ export class Wallet {
     function filterUtxos(utxos: Array<IUTXO>) {
       return utxos.filter((utxo: any) => {
         const value = new BigNumber(utxo.value);
+
         if (
           value.gt(new BigNumber(25).times(1e6)) &&
           value.lt(new BigNumber(UTXO_MIN_VALUE).times(1e8))
         ) {
           return true;
+
         }
         return false;
       });
