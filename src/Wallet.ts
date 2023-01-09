@@ -394,12 +394,12 @@ export class Wallet {
       }
       return sum;
     }
-    let balance = sumUTXOs(validUTXOs);
+    let balance = sumUTXOs(utxos);
 
     if (balance.lte(new BigNumber(UTXO_MIN_VALUE).times(1e8))) {
       return {
         hex: "",
-        error: `User's Balance is below the threshold of ${UTXO_MIN_VALUE} HYDRA. No UTXOs to optimize.`,
+        error: `User's Balance is below or equal to the threshold of ${UTXO_MIN_VALUE} HYDRA. No UTXOs to optimize.`,
       };
     }
 
