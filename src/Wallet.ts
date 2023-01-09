@@ -371,6 +371,7 @@ export class Wallet {
   ): Promise<{ hex: string; error: string }> {
     var tx = new TransactionBuilder(keyPair.network);
     var UTXO_MIN_VALUE = 100;
+    var UTXO_THRESHOLD = 150;
     var validUTXOs = filterUtxos(utxos);
     var fee: BigNumber;
     const from: string = this.address;
@@ -381,6 +382,7 @@ export class Wallet {
         error: "No UTXOs to optimize.",
       };
     }
+
     validUTXOs.sort((lhs: IUTXO, rhs: IUTXO): any => {
       return new BigNumber(lhs.value).minus(rhs.value);
     });
@@ -397,10 +399,20 @@ export class Wallet {
     if (balance.lte(new BigNumber(UTXO_MIN_VALUE).times(1e8))) {
       return {
         hex: "",
-        error: "Not enough balance for minimum UTXO.",
+        error: `User's Balance is below the threshold of ${UTXO_MIN_VALUE} HYDRA. No UTXOs to optimize.`,
       };
     }
 
+    // get all  of the UTXOSs above the threshold  of the wallet
+    var UTXOSofWalletAboveThreshold = utxos.filter((utxo: any) => {
+      const value = new BigNumber(utxo.value);
+      if (
+        value.gt(new BigNumber(UTXO_THRESHOLD).times(1e8)) /// upper threshold for utxo filter is now 150
+      ) {
+        return true;
+      }
+      return false;
+    });
 
     // Calculate fee with the current inputs and outputs
     fee = calculateFee(validUTXOs, 1, feeRate, keyPair);
@@ -412,24 +424,70 @@ export class Wallet {
       };
     }
 
+    var sumOfValidUTXOS = sumUTXOs(validUTXOs);
 
-    if (balance.lt(new BigNumber(UTXO_MIN_VALUE).times(1e8))) {
+    if (sumOfValidUTXOS.gt(new BigNumber(UTXO_THRESHOLD).times(1e8))) {
+      // Add the inputs
+      for (var i = 0; i < validUTXOs.length; i++) {
+        tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
+      }
+
+      // Add the outputs
+      tx.addOutput(from, balance.minus(fee).toNumber());
+
+      // Sign the inputs
+      for (var i = 0; i < validUTXOs.length; i++) {
+        tx.sign(i, keyPair);
+      }
+
       return {
-        hex: "",
-        error: "No enough balance for minimum UTXO.",
+        hex: tx.build().toHex(),
+        error: "",
       };
-    }
-    // Add the inputs
-    for (var i = 0; i < validUTXOs.length; i++) {
-      tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
-    }
+    } else if (
+      sumOfValidUTXOS.gt(new BigNumber(UTXO_MIN_VALUE).times(1e8)) &&
+      UTXOSofWalletAboveThreshold[0] === undefined
+    ) {
+      // Add the inputs
+      for (var i = 0; i < validUTXOs.length; i++) {
+        tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
+      }
 
+      // Add the outputs
+      tx.addOutput(from, balance.minus(fee).toNumber());
 
-    tx.addOutput(from, balance.minus(fee).toNumber());
+      // Sign the inputs
+      for (var i = 0; i < validUTXOs.length; i++) {
+        tx.sign(i, keyPair);
+      }
 
-    // Sign the inputs
-    for (var i = 0; i < validUTXOs.length; i++) {
-      tx.sign(i, keyPair);
+      return {
+        hex: tx.build().toHex(),
+        error: "",
+      };
+    } else {
+      validUTXOs.push(UTXOSofWalletAboveThreshold[0]);
+      balance = sumUTXOs(validUTXOs);
+
+      // Add the inputs
+      for (var i = 0; i < validUTXOs.length; i++) {
+        tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
+      }
+
+      // add the first UTXOS from the array of UTXOS above the threshold
+
+      // Add the outputs
+      tx.addOutput(from, balance.minus(fee).toNumber());
+
+      // Sign the inputs
+      for (var i = 0; i < validUTXOs.length; i++) {
+        tx.sign(i, keyPair);
+      }
+
+      return {
+        hex: tx.build().toHex(),
+        error: "",
+      };
     }
 
     function calculateFee(
@@ -460,18 +518,13 @@ export class Wallet {
 
         if (
           value.gt(new BigNumber(25).times(1e6)) &&
-          value.lt(new BigNumber(UTXO_MIN_VALUE).times(1e8))
+          value.lt(new BigNumber(UTXO_THRESHOLD).times(1e8))
         ) {
           return true;
-
         }
         return false;
       });
     }
-    return {
-      hex: tx.build().toHex(),
-      error: "",
-    };
   }
 
   public async optimizeWalletUTXOS(): Promise<
