@@ -372,9 +372,18 @@ export class Wallet {
     var tx = new TransactionBuilder(keyPair.network);
     var UTXO_MIN_VALUE = 100;
     var UTXO_THRESHOLD = 150;
-    var validUTXOs = filterUtxos(utxos);
     var fee: BigNumber;
     const from: string = this.address;
+    let walletBalance: BigNumber = sumUTXOs(utxos);
+
+    if (walletBalance.lte(new BigNumber(UTXO_MIN_VALUE).times(1e8))) {
+      return {
+        hex: "",
+        error: `User's Balance is below or equal to the threshold of ${UTXO_MIN_VALUE} HYDRA. No UTXOs to optimize.`,
+      };
+    }
+
+    var validUTXOs = filterUtxos(utxos);
 
     if (validUTXOs.length == 0) {
       return {
@@ -383,28 +392,10 @@ export class Wallet {
       };
     }
 
-    validUTXOs.sort((lhs: IUTXO, rhs: IUTXO): any => {
-      return new BigNumber(lhs.value).minus(rhs.value);
-    });
-
-    function sumUTXOs(utxos: Array<IUTXO>) {
-      let sum = new BigNumber(0);
-      for (let utxo of utxos) {
-        sum = sum.plus(utxo.value);
-      }
-      return sum;
-    }
-    let balance = sumUTXOs(utxos);
-
-    if (balance.lte(new BigNumber(UTXO_MIN_VALUE).times(1e8))) {
-      return {
-        hex: "",
-        error: `User's Balance is below or equal to the threshold of ${UTXO_MIN_VALUE} HYDRA. No UTXOs to optimize.`,
-      };
-    }
+    var balanceOfValidUTXOS: BigNumber = sumUTXOs(validUTXOs);
 
     // get all  of the UTXOSs above the threshold  of the wallet
-    var UTXOSofWalletAboveThreshold = utxos.filter((utxo: any) => {
+    var UTXOSofWalletAboveThreshold: IUTXO[] = utxos.filter((utxo: any) => {
       const value = new BigNumber(utxo.value);
       if (
         value.gt(new BigNumber(UTXO_THRESHOLD).times(1e8)) /// upper threshold for utxo filter is now 150
@@ -414,75 +405,61 @@ export class Wallet {
       return false;
     });
 
-    // Calculate fee with the current inputs and outputs
-    fee = calculateFee(validUTXOs, 1, feeRate, keyPair);
+    if (balanceOfValidUTXOS.gt(new BigNumber(UTXO_THRESHOLD).times(1e8))) {
+      fee = calculateFee(validUTXOs, 1, feeRate, keyPair);
 
-    if (fee.gt(balance)) {
-      return {
-        hex: "",
-        error: "Not enough balance to pay fee.",
-      };
-    }
-
-    var sumOfValidUTXOS = sumUTXOs(validUTXOs);
-
-    if (sumOfValidUTXOS.gt(new BigNumber(UTXO_THRESHOLD).times(1e8))) {
-      // Add the inputs
-      for (var i = 0; i < validUTXOs.length; i++) {
-        tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
-      }
-
-      // Add the outputs
-      tx.addOutput(from, balance.minus(fee).toNumber());
-
-      // Sign the inputs
-      for (var i = 0; i < validUTXOs.length; i++) {
-        tx.sign(i, keyPair);
-      }
+      addInputsOutputsAndSignInputs(validUTXOs, balanceOfValidUTXOS);
 
       return {
         hex: tx.build().toHex(),
         error: "",
       };
     } else if (
-      sumOfValidUTXOS.gt(new BigNumber(UTXO_MIN_VALUE).times(1e8)) &&
-      UTXOSofWalletAboveThreshold[0] === undefined
+      balanceOfValidUTXOS.gt(new BigNumber(UTXO_MIN_VALUE).times(1e8)) &&
+      UTXOSofWalletAboveThreshold.length === 0
     ) {
-      // Add the inputs
-      for (var i = 0; i < validUTXOs.length; i++) {
-        tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
+      fee = calculateFee(validUTXOs, 1, feeRate, keyPair);
+      if (fee.gt(balanceOfValidUTXOS)) {
+        return {
+          hex: "",
+          error: "Not enough balance to pay fee.",
+        };
       }
 
-      // Add the outputs
-      tx.addOutput(from, balance.minus(fee).toNumber());
-
-      // Sign the inputs
-      for (var i = 0; i < validUTXOs.length; i++) {
-        tx.sign(i, keyPair);
-      }
+      addInputsOutputsAndSignInputs(validUTXOs, balanceOfValidUTXOS);
 
       return {
         hex: tx.build().toHex(),
         error: "",
       };
     } else {
-      validUTXOs.push(UTXOSofWalletAboveThreshold[0]);
-      balance = sumUTXOs(validUTXOs);
+      let arrayOfValidUTXOSPlusFirstUTXOAboveThreshold: IUTXO[] = [
+        ...validUTXOs,
+        UTXOSofWalletAboveThreshold[0],
+      ];
 
-      // Add the inputs
-      for (var i = 0; i < validUTXOs.length; i++) {
-        tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
+      fee = calculateFee(
+        arrayOfValidUTXOSPlusFirstUTXOAboveThreshold,
+        1,
+        feeRate,
+        keyPair
+      );
+
+      if (fee.gt(balanceOfValidUTXOS)) {
+        return {
+          hex: "",
+          error: "Not enough balance to pay fee.",
+        };
       }
 
-      // add the first UTXOS from the array of UTXOS above the threshold
+      var balanceOfValidUTXOSPlusFirstUTXOAboveThreshold = sumUTXOs(
+        arrayOfValidUTXOSPlusFirstUTXOAboveThreshold
+      );
 
-      // Add the outputs
-      tx.addOutput(from, balance.minus(fee).toNumber());
-
-      // Sign the inputs
-      for (var i = 0; i < validUTXOs.length; i++) {
-        tx.sign(i, keyPair);
-      }
+      addInputsOutputsAndSignInputs(
+        arrayOfValidUTXOSPlusFirstUTXOAboveThreshold,
+        balanceOfValidUTXOSPlusFirstUTXOAboveThreshold
+      );
 
       return {
         hex: tx.build().toHex(),
@@ -524,6 +501,35 @@ export class Wallet {
         }
         return false;
       });
+    }
+
+    function addInputsOutputsAndSignInputs(
+      arrayOfUTXOSForInput: Array<IUTXO>,
+      ouputAmount: any
+    ) {
+      // Add the inputs
+      for (var i = 0; i < arrayOfUTXOSForInput.length; i++) {
+        tx.addInput(
+          arrayOfUTXOSForInput[i].hash,
+          arrayOfUTXOSForInput[i].outputIndex
+        );
+      }
+
+      // Add the outputs
+      tx.addOutput(from, ouputAmount.minus(fee).toNumber());
+
+      // Sign the inputs
+      for (var i = 0; i < arrayOfUTXOSForInput.length; i++) {
+        tx.sign(i, keyPair);
+      }
+    }
+
+    function sumUTXOs(utxos: Array<IUTXO>) {
+      let sum = new BigNumber(0);
+      for (let utxo of utxos) {
+        sum = sum.plus(utxo.value);
+      }
+      return sum;
     }
   }
 
