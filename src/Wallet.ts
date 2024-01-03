@@ -367,19 +367,19 @@ export class Wallet {
   public async optimizeUTXOS(
     utxos: IUTXO[],
     keyPair: ECPair,
-    feeRate: number
+    feeRate: number,
+    utxoMinValue: number,
+    utxoThreshold: number
   ): Promise<{ hex: string; error: string }> {
     var tx = new TransactionBuilder(keyPair.network);
-    var UTXO_MIN_VALUE = 100;
-    var UTXO_THRESHOLD = 150;
     var fee: BigNumber;
     const from: string = this.address;
     let walletBalance: BigNumber = sumUTXOs(utxos);
 
-    if (walletBalance.lte(new BigNumber(UTXO_MIN_VALUE).times(1e8))) {
+    if (walletBalance.lte(new BigNumber(utxoMinValue).times(1e8))) {
       return {
         hex: "",
-        error: `User's Balance is below or equal to the threshold of ${UTXO_MIN_VALUE} HYDRA. No UTXOs to optimize.`,
+        error: `User's Balance is below or equal to the threshold of ${utxoMinValue} HYDRA. No UTXOs to optimize.`,
       };
     }
 
@@ -398,14 +398,14 @@ export class Wallet {
     var UTXOSofWalletAboveThreshold: IUTXO[] = utxos.filter((utxo: any) => {
       const value = new BigNumber(utxo.value);
       if (
-        value.gt(new BigNumber(UTXO_THRESHOLD).times(1e8)) /// upper threshold for utxo filter is now 150
+        value.gt(new BigNumber(utxoThreshold).times(1e8)) /// upper threshold for utxo filter is now 150
       ) {
         return true;
       }
       return false;
     });
 
-    if (balanceOfValidUTXOS.gt(new BigNumber(UTXO_THRESHOLD).times(1e8))) {
+    if (balanceOfValidUTXOS.gt(new BigNumber(utxoThreshold).times(1e8))) {
       fee = calculateFee(validUTXOs, 1, feeRate, keyPair);
 
       addInputsOutputsAndSignInputs(validUTXOs, balanceOfValidUTXOS);
@@ -415,7 +415,7 @@ export class Wallet {
         error: "",
       };
     } else if (
-      balanceOfValidUTXOS.gt(new BigNumber(UTXO_MIN_VALUE).times(1e8)) &&
+      balanceOfValidUTXOS.gt(new BigNumber(utxoMinValue).times(1e8)) &&
       UTXOSofWalletAboveThreshold.length === 0
     ) {
       fee = calculateFee(validUTXOs, 1, feeRate, keyPair);
@@ -480,7 +480,7 @@ export class Wallet {
         tx.addInput(inputs[i].hash, inputs[i].outputIndex);
       }
       for (var i = 0; i <= outputs; i++) {
-        tx.addOutput(from, new BigNumber(UTXO_MIN_VALUE).times(1e8).toNumber());
+        tx.addOutput(from, new BigNumber(utxoMinValue).times(1e8).toNumber());
       }
       // Sign the inputs
       for (var i = 0; i < inputs.length; i++) {
@@ -495,7 +495,7 @@ export class Wallet {
 
         if (
           value.gt(new BigNumber(25).times(1e6)) &&
-          value.lt(new BigNumber(UTXO_THRESHOLD).times(1e8))
+          value.lt(new BigNumber(utxoThreshold).times(1e8))
         ) {
           return true;
         }
@@ -533,16 +533,19 @@ export class Wallet {
     }
   }
 
-  public async optimizeWalletUTXOS(): Promise<
-    Insight.ISendRawTxResult | string
-  > {
+  public async optimizeWalletUTXOS(
+    utxoMinValue: number,
+    utxoThreshold: number
+  ): Promise<Insight.ISendRawTxResult | string> {
     const utxos: IUTXO[] = await this.getBitcoinjsUTXOs();
     const infoRes: any = await this.insight.getBlockchainInfo();
     const feeRate: number = Math.ceil(infoRes.feeRate * 1e5);
     let txResponse: { hex: string; error: string } = await this.optimizeUTXOS(
       utxos,
       this.keyPair,
-      feeRate
+      feeRate,
+      utxoMinValue || 100,
+      utxoThreshold || 150
     );
     return txResponse.hex !== ""
       ? await this.sendRawTx(txResponse.hex)
