@@ -383,7 +383,7 @@ export class Wallet {
       };
     }
 
-    var validUTXOs = filterUtxos(utxos);
+    var validUTXOs = filterUtxos(utxos, utxoThreshold);
 
     if (validUTXOs.length == 0) {
       return {
@@ -489,7 +489,7 @@ export class Wallet {
 
       return new BigNumber(tx.build().toHex().length).times(feeRate);
     }
-    function filterUtxos(utxos: Array<IUTXO>) {
+    function filterUtxos(utxos: Array<IUTXO>, utxoThreshold: number) {
       return utxos.filter((utxo: any) => {
         const value = new BigNumber(utxo.value);
 
