@@ -542,6 +542,8 @@ export class Wallet {
   ): Promise<{ hex: string; error: string }> {
     // Filter the utxos so that they don't have value less than 0.04 HYDRA or 100
     var validUTXOs = filterUtxos(utxos, UTXO_MIN_VALUE);
+    console.log("EXTENSION LOG validUTXOs (Initial Call) =>", validUTXOs);
+
     if (validUTXOs.length == 0) {
       return {
         hex: "",
@@ -623,6 +625,7 @@ export class Wallet {
       tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
     }
     // Add the outputs
+    console.log("EXTENSION LOG outputs =>", outputs);
     tx.addOutput(
       from,
       balance
@@ -633,6 +636,8 @@ export class Wallet {
     for (var i = 0; i < outputs - 1; i++) {
       tx.addOutput(from, new BigNumber(UTXO_MIN_VALUE).times(1e8).toNumber());
     }
+
+    console.log("EXTENSION LOG validUTXOs =>", validUTXOs);
 
     // Sign the inputs
     for (var i = 0; i < validUTXOs.length; i++) {
