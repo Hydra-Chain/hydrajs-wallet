@@ -538,10 +538,11 @@ export class Wallet {
     keyPair: ECPair,
     feeRate: number,
     utxoMinValue: number,
+    utxoMaxValue: number,
     UTXO_MIN_VALUE: number //UTXO_MIN_VALUE
   ): Promise<{ hex: string; error: string }> {
     // Filter the utxos so that they don't have value less than 0.04 HYDRA or 100
-    var validUTXOs = filterUtxos(utxos, UTXO_MIN_VALUE);
+    var validUTXOs = filterUtxosOutsideRange(utxos, utxoMinValue, utxoMaxValue);
     console.log("EXTENSION LOG validUTXOs (Initial Call) =>", validUTXOs);
 
     if (validUTXOs.length == 0) {
@@ -660,6 +661,21 @@ export class Wallet {
         return false;
       });
     }
+    function filterUtxosOutsideRange(
+      utxos: Array<IUTXO>,
+      utxoMinValue: number,
+      utxoMaxValue: number
+    ) {
+      return utxos.filter((utxo) => {
+        const value = new BigNumber(utxo.value);
+
+        // Check if the UTXO value is outside the specified range
+        return (
+          value.lt(new BigNumber(utxoMinValue).times(1e8)) ||
+          value.gt(new BigNumber(utxoMaxValue).times(1e8))
+        );
+      });
+    }
     //////
     function sumUTXOs(utxos: Array<IUTXO>) {
       let sum = new BigNumber(0);
@@ -716,6 +732,7 @@ export class Wallet {
 
   public async optimizeWalletUTXOS(
     utxoMinValue: number,
+    utxoMaxValue: number,
     utxoThreshold: number //UTXO_MIN_VALUE
   ): Promise<Insight.ISendRawTxResult | string> {
     const utxos: IUTXO[] = await this.getBitcoinjsUTXOs();
@@ -726,6 +743,7 @@ export class Wallet {
       this.keyPair,
       feeRate,
       utxoMinValue || 100,
+      utxoMaxValue || 110,
       utxoThreshold || 150
     );
     return txResponse.hex !== ""
