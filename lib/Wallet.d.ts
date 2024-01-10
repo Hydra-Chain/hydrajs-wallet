@@ -125,9 +125,9 @@ export declare class Wallet {
         hex: string;
         error: string;
     }>;
-    splitUTXOS(utxos: IUTXO[], keyPair: ECPair, feeRate: number, utxoMinValue: number, UTXO_MIN_VALUE: number): Promise<{
+    splitUTXOS(utxos: IUTXO[], keyPair: ECPair, feeRate: number, utxoMinValue: number, utxoMaxValue: number, UTXO_MIN_VALUE: number): Promise<{
         hex: string;
         error: string;
     }>;
-    optimizeWalletUTXOS(utxoMinValue: number, utxoThreshold: number): Promise<Insight.ISendRawTxResult | string>;
+    optimizeWalletUTXOS(utxoMinValue: number, utxoMaxValue: number, utxoThreshold: number): Promise<Insight.ISendRawTxResult | string>;
 }
