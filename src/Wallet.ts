@@ -705,21 +705,17 @@ export class Wallet {
       bytefee: any,
       outputs = 101
     ) {
-      try {
-        var totalValue = new BigNumber(0);
-        var selected = [];
-        for (let utxo of utxos) {
-          totalValue = totalValue.plus(utxo.value);
-          selected.push(utxo);
-          var txsize = selected.length * 102 + outputs * 31 + 10;
-          if (totalValue.gt(`${txsize * bytefee + value}`)) {
-            break;
-          }
+      var totalValue = new BigNumber(0);
+      var selected = [];
+      for (let utxo of utxos) {
+        totalValue = totalValue.plus(utxo.value);
+        selected.push(utxo);
+        var txsize = selected.length * 102 + outputs * 31 + 10;
+        if (totalValue.gt(`${txsize * bytefee + value}`)) {
+          break;
         }
-        return selected;
-      } catch (error) {
-        console.log("Error in selectUTXOs fn()", error);
       }
+      return selected;
     }
     ////////
     function calculateFee(
