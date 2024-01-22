@@ -121,9 +121,14 @@ export declare class Wallet {
     generateCreateContractTx(code: string, opts?: IContractCreateTXOptions): Promise<string>;
     signMessage(msg: string): Promise<string>;
     verifyMessage(msg: string, address: string, signature: string): boolean;
+    optimizeUTXOS(utxos: IUTXO[], keyPair: ECPair, feeRate: number, utxoMinValue: number, utxoThreshold: number): Promise<{
+        hex: string;
+        error: string;
+    }>;
+    optimizeWalletUTXOS(utxoMinValue: number, utxoThreshold: number): Promise<Insight.ISendRawTxResult | string>;
     splitUTXOS(utxos: IUTXO[], keyPair: ECPair, feeRate: number, utxoMinValue: number, utxoMaxValue: number, resultingUTXO: number): Promise<{
         hex: string;
         error: string;
     }>;
-    optimizeWalletUTXOS(utxoMinValue: number, utxoMaxValue: number, utxoThreshold: number): Promise<Insight.ISendRawTxResult | string>;
+    splitWalletUTXOS(utxoMinValue: number, utxoMaxValue: number, utxoThreshold: number): Promise<Insight.ISendRawTxResult | string>;
 }
