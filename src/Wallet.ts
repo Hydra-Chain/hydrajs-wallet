@@ -548,6 +548,231 @@ export class Wallet {
       ? await this.sendRawTx(txResponse.hex)
       : txResponse.error;
   }
+
+  public async splitUTXOS(
+    utxos: IUTXO[],
+    keyPair: ECPair,
+    feeRate: number,
+    utxoMinValue: number,
+    utxoMaxValue: number,
+    resultingUTXO: number //resultingUTXO
+  ): Promise<{ hex: string; error: string }> {
+    var validUTXOs = filterUtxosOutsideRange(utxos, utxoMinValue, utxoMaxValue);
+
+    if (validUTXOs.length == 0) {
+      return {
+        hex: "",
+        error: "No valid UTXOs to split.",
+      };
+    }
+    // Sort them by size so it optimize the small ones first
+    validUTXOs.sort((lhs, rhs) => {
+      const lhsValue = new BigNumber(lhs.value);
+      const rhsValue = new BigNumber(rhs.value);
+      return lhsValue.minus(rhsValue).toNumber();
+    });
+
+    // Calculate the total balance
+    var balance = sumUTXOs(validUTXOs);
+
+    if (balance.lte(new BigNumber(resultingUTXO).times(1e8))) {
+      return {
+        hex: "",
+        error: "Not enough balance for minimum UTXO.",
+      };
+    }
+
+    var fee: BigNumber;
+    var outputs: number;
+
+    // Calculate the total outputs with value of resultingUTXO
+    var totalOutputs = balance.dividedToIntegerBy(
+      new BigNumber(resultingUTXO).times(1e8)
+    );
+
+    if (totalOutputs.toNumber() > 100) {
+      // If more than 100 => therefore the balance is over 10000 => 100 outputs with 100 and 1 with the change
+      outputs = 101;
+      validUTXOs = selectUTXOs(
+        validUTXOs,
+        feeRate,
+        new BigNumber(resultingUTXO).times(1e8).times(100).toNumber(),
+        outputs
+      );
+      balance = sumUTXOs(validUTXOs);
+    } else {
+      outputs = totalOutputs.toNumber();
+    }
+
+    var tx = new TransactionBuilder(keyPair.network);
+
+    // Get the walet address
+    var from: string = this.address;
+    //Calculate the value for the transaction
+    var value = new BigNumber(resultingUTXO).times(1e8).times(outputs);
+
+    // Calculate fee with the current inputs and outputs
+    fee = calculateFee(validUTXOs, outputs, feeRate, keyPair);
+    if (fee.gt(balance)) {
+      return {
+        hex: "",
+        error: "Not enough balance to pay fee.",
+      };
+    }
+
+    //Remove one output if not enough balance for value + fee
+    if (balance.minus(fee).lt(value)) {
+      outputs -= 1;
+      value = value.minus(new BigNumber(resultingUTXO).times(1e8));
+    }
+    // If after the substitution the value is less than the minimum utxo value no point for transaction
+    if (value.lt(new BigNumber(resultingUTXO).times(1e8))) {
+      return {
+        hex: "",
+        error: "No enough balance for minimum UTXO.",
+      };
+    }
+
+    // Add the inputs
+    for (var i = 0; i < validUTXOs.length; i++) {
+      tx.addInput(validUTXOs[i].hash, validUTXOs[i].outputIndex);
+    }
+    // Add the outputs
+    tx.addOutput(
+      from,
+      balance
+        .minus(fee)
+        .minus(new BigNumber(outputs - 1).times(resultingUTXO).times(1e8))
+        .toNumber()
+    );
+    for (var i = 0; i < outputs - 1; i++) {
+      tx.addOutput(from, new BigNumber(resultingUTXO).times(1e8).toNumber());
+    }
+
+    // Sign the inputs
+    for (var i = 0; i < validUTXOs.length; i++) {
+      tx.sign(i, keyPair);
+    }
+    return {
+      hex: tx.build().toHex(),
+      error: "",
+    };
+
+    //////////////////SUPPORT FUNCTIONS  [SPLIT UTXO] /////////////////////
+
+    function filterUtxosOutsideRange(
+      utxos: Array<IUTXO>,
+      utxoMinValue: number,
+      utxoMaxValue: number
+    ) {
+      return utxos.filter((utxo) => {
+        const value = new BigNumber(utxo.value);
+
+        // Check if the UTXO value is outside the specified range
+        return (
+          value.lt(new BigNumber(utxoMinValue).times(1e8)) ||
+          value.gt(new BigNumber(utxoMaxValue).times(1e8))
+        );
+      });
+    }
+    //////
+    function sumUTXOs(utxos: Array<IUTXO>) {
+      let sum = new BigNumber(0);
+      for (let utxo of utxos) {
+        sum = sum.plus(utxo.value);
+      }
+      return sum;
+    }
+    /////////
+    function selectUTXOs(
+      utxos: Array<IUTXO>,
+      value: any,
+      bytefee: any,
+      outputs = 101
+    ) {
+      var totalValue = new BigNumber(0);
+      var selected = [];
+      for (let utxo of utxos) {
+        totalValue = totalValue.plus(utxo.value);
+        selected.push(utxo);
+        var txsize = selected.length * 102 + outputs * 31 + 10;
+        if (totalValue.gt(`${txsize * bytefee + value}`)) {
+          break;
+        }
+      }
+      return selected;
+    }
+    ////////
+    function calculateFee(
+      inputs: IUTXO[],
+      outputs: any,
+      feeRate: any,
+      keyPair: ECPair
+    ) {
+      var tx = new TransactionBuilder(keyPair.getNetwork());
+
+      for (var i = 0; i < inputs.length; i++) {
+        ///adds the inputs to the tx
+        tx.addInput(inputs[i].hash, inputs[i].outputIndex);
+      }
+      for (var i = 0; i <= outputs; i++) {
+        tx.addOutput(from, new BigNumber(resultingUTXO).times(1e8).toNumber());
+      }
+      // Sign the inputs
+      for (var i = 0; i < inputs.length; i++) {
+        tx.sign(i, keyPair);
+      }
+
+      // Calculate the total fee
+      const totalFee = new BigNumber(tx.build().toHex().length).times(feeRate);
+
+      // Calculate and return half of the fee
+      const halfFee = totalFee.dividedBy(2);
+
+      return halfFee;
+    }
+
+    //////////////////SUPPORT FUNCTIONS [SPLIT UTXO]/////////////////////
+  }
+
+  public async splitWalletUTXOS(
+    utxoMinValue: number,
+    utxoMaxValue: number,
+    utxoThreshold: number // resultingUTXO
+  ): Promise<Insight.ISendRawTxResult | string> {
+    try {
+      // Retrieve UTXOs from the wallet
+      const utxos: IUTXO[] = await this.getBitcoinjsUTXOs();
+
+      // Retrieve blockchain information to get the fee rate
+      const infoRes: any = await this.insight.getBlockchainInfo();
+
+      // Calculate the fee rate for the transaction
+      const feeRate: number = Math.ceil(infoRes.feeRate * 1e5);
+
+      // Split UTXOs based on specified parameters
+      let txResponse: { hex: string; error: string } = await this.splitUTXOS(
+        utxos,
+        this.keyPair,
+        feeRate,
+        utxoMinValue || 0.001,
+        utxoMaxValue || 200,
+        utxoThreshold || 100
+      );
+
+      // If a valid transaction hex is generated, send the transaction
+      return txResponse.hex !== ""
+        ? await this.sendRawTx(txResponse.hex)
+        : txResponse.error || "Unknown error";
+    } catch (error) {
+      // Log any unexpected errors
+      console.log(
+        "[:SPLIT UTXO::ERROR :]:-Error in optimizeWalletUTXOS:",
+        error
+      );
+      return "Unexpected error occurred";
+    }
+  }
 }
 
 // TODO
